@@ -3,10 +3,12 @@
 namespace app\controllers;
 
 
-
+use app\models\AccountActivation;
+use http\Url;
 use Yii;
 use yii\base\InvalidParamException;
 use yii\filters\AccessControl;
+use yii\helpers\Html;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\Response;
@@ -31,7 +33,7 @@ class SiteController extends Controller
                 'only' => ['logout'],
                 'rules' => [
                     [
-                        'actions' => ['logout','send-email','reset-password'],
+                        'actions' => ['logout', 'send-email', 'reset-password','activate-account'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -76,9 +78,10 @@ class SiteController extends Controller
 
     public function actionSignup()
     {
-        $model = new SignUpForm();
+        $emailActivation = Yii::$app->params['emailActivation'];
+        $model = $emailActivation ? new SignUpForm(['scenario' => 'emailActivation']) : new SignUpForm();
 
-        if ($model->load(Yii::$app->request->post())&&$model->validate()):
+        if ($model->load(Yii::$app->request->post()) && $model->validate()):
             /* Из signup() возвращается либо объект пользователя(если он сохранился в БД), или null*/
             if ($user = $model->signup()):
                 /* Если signup() вернул объект сохраненного пользователя проверем чтобы его статус был активированным*/
@@ -87,6 +90,14 @@ class SiteController extends Controller
                     if (Yii::$app->getUser()->login($user)):
                         return $this->goHome();
                     endif;
+                else:
+                    if ($model->sendActivationEmail($user)):
+                        Yii::$app->session->setFlash('success', 'Письмо отправлено на email <strong>' . Html::encode($user->email) . '</strong>( Проверьте папку спам)');
+                    else:
+                        Yii::$app->session->setFlash('error', 'Ошибка. Письма не отправлено');
+                        Yii::error('Ошибка отправки письма');
+                    endif;
+                    return $this->refresh(); //обновляем представление signup
                 endif;
             else:
                 Yii::$app->session->setFlash('error', 'Взникла ошибка при регистрации');
@@ -113,6 +124,30 @@ class SiteController extends Controller
             'model' => $model,
         ]);
     }
+
+
+    public function actionActivateAccount($key)
+    {
+        try{
+            $user=new AccountActivation($key);
+        }
+        catch(InvalidParamException $e)
+        {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+
+        if ($user->activateAccount())
+        {
+            Yii::$app->session->setFlash('success','Активация прошла успешно! <strong>'.Html::encode($user->username).'<strong> Вы теперь официальный пользователь LFL-Life');
+        }
+        else
+        {
+            Yii::$app->session->setFlash('error','Ошибка активации');
+            Yii::error('Ошибка при активации');
+        }
+        return $this->redirect(['login']);
+    }
+
 
     /**
      * Logout action.
@@ -160,13 +195,11 @@ class SiteController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate()) {
-                if($model->sendEmail())
-                {
-                    Yii::$app->getSession()->setFlash('warning','Проверьте email');
+                if ($model->sendEmail()) {
+                    Yii::$app->getSession()->setFlash('warning', 'Проверьте email');
                     return $this->goHome();
-                }
-                else
-                    Yii::$app->getSession()->setFlash('error','Нельзя сбросить пароль');
+                } else
+                    Yii::$app->getSession()->setFlash('error', 'Нельзя сбросить пароль');
 
             }
         }
@@ -180,8 +213,7 @@ class SiteController extends Controller
     {
         try {
             $model = new ResetPasswordForm($key);
-        }
-        catch (InvalidParamException $e) {
+        } catch (InvalidParamException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
         if ($model->load(Yii::$app->request->post())) {

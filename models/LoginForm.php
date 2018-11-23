@@ -56,9 +56,13 @@ class LoginForm extends Model
     {
         if (!$this->hasErrors()) {
             $user = $this->getUser();
+            if(!$user||$user->status==User::STATUS_NOT_ACTIVE)
+            {
+                $this->addError($attribute, 'Неактивирован Емайл');
+            }
 
             if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
+                $this->addError($attribute, 'Неверный пароль или имя пользователя');
             }
         }
     }

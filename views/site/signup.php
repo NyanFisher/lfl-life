@@ -26,14 +26,20 @@ $this->title = 'Регистрация';
 
                 <?= $form->field($model, 'password')->passwordInput()->label('Введите Пароль') ?>
 
+                <?php
+                if ($model->scenario==='emailActivation'):
+                    ?>
+                    <i>*На указанную электронную почту будет отправлено письмо для активации аккаунта.</i>
+                <?php endif; ?>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <div class="col-lg-offset-1 col-lg-11">
-                                <?= Html::submitButton('Вход', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
+                                <?= Html::submitButton('Зарегистрироваться', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-md-6 text-right">
                         <a href="<?= \yii\helpers\Url::to(['login']) ?>" class="btn btn-link">Авторизация</a>
                     </div>
@@ -41,7 +47,9 @@ $this->title = 'Регистрация';
 
                 <?php ActiveForm::end(); ?>
             </div>
+
         </div>
     </div>
     <div class="col-md-4"></div>
+
 </div>
