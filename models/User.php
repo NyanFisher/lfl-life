@@ -11,25 +11,16 @@ use yii\web\IdentityInterface;
  *
  * @property int $id
  * @property string $username
- * @property string $firstName
- * @property string $lastName
- * @property int $leadingFoot
- * @property string $auth_key
  * @property string $password_hash
- * @property string $password_reset_token
+ * @property string $auth_key
  * @property string $email
- * @property string $secret_key
  * @property int $status
  * @property string $created_at
  * @property string $updated_at
+ * @property string $secret_key
  */
 class User extends \yii\db\ActiveRecord implements IdentityInterface
 {
-
-    const STATUS_DELETED = 0;
-    const STATUS_NOT_ACTIVE = 1;
-    const STATUS_ACTIVE = 10;
-
     /**
      * {@inheritdoc}
      */
@@ -44,15 +35,13 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['username', 'auth_key', 'password_hash', 'email'], 'required'],
-            [['leadingFoot', 'status'], 'integer'],
+            [['username', 'password_hash', 'auth_key', 'email'], 'required'],
+            [['status'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
-            [['username', 'firstName', 'lastName', 'auth_key'], 'string', 'max' => 32],
-            [['password_hash', 'password_reset_token', 'email'], 'string', 'max' => 255],
+            [['username', 'auth_key'], 'string', 'max' => 32],
+            [['password_hash', 'email', 'secret_key'], 'string', 'max' => 255],
             [['username'], 'unique'],
             [['email'], 'unique'],
-            [['password_reset_token'], 'unique'],
-            ['secret_key','unique'],
         ];
     }
 
@@ -64,19 +53,18 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return [
             'id' => 'ID',
             'username' => 'Username',
-            'firstName' => 'First Name',
-            'lastName' => 'Last Name',
-            'leadingFoot' => 'Leading Foot',
-            'auth_key' => 'Auth Key',
             'password_hash' => 'Password Hash',
-            'password_reset_token' => 'Password Reset Token',
+            'auth_key' => 'Auth Key',
             'email' => 'Email',
             'status' => 'Status',
-            'created_at' => 'Created At',   //Время добавления нового пользователя
-            'updated_at' => 'Updated At',   //Время изменения пользователя
+            'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
+            'secret_key' => 'Secret Key',
         ];
     }
-
+    const STATUS_DELETED = 0;
+    const STATUS_NOT_ACTIVE = 1;
+    const STATUS_ACTIVE = 10;
     //Поведение//
     //----------------------------------------------------------------------------------------------------------------//
     /*Автоматически заполняет значения текущего времени для полей created_at и updated_at*/
@@ -188,4 +176,5 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return $this->auth_key === $authKey;
     }
     //----------------------------------------------------------------------------------------------------------------//
+
 }

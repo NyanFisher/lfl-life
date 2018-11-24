@@ -20,34 +20,8 @@ use app\models\ResetPasswordForm;
 use app\models\SendEmailForm;
 use app\models\User;
 
-class SiteController extends Controller
+class SiteController extends BehaviorsController
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout', 'send-email', 'reset-password','activate-account'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -93,6 +67,7 @@ class SiteController extends Controller
                 else:
                     if ($model->sendActivationEmail($user)):
                         Yii::$app->session->setFlash('success', 'Письмо отправлено на email <strong>' . Html::encode($user->email) . '</strong>( Проверьте папку спам)');
+
                     else:
                         Yii::$app->session->setFlash('error', 'Ошибка. Письма не отправлено');
                         Yii::error('Ошибка отправки письма');
