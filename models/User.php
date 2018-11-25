@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\models\profile\Profile;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\web\IdentityInterface;
@@ -18,9 +19,16 @@ use yii\web\IdentityInterface;
  * @property string $created_at
  * @property string $updated_at
  * @property string $secret_key
+ *
+ * @property Profile $profile
  */
+
 class User extends \yii\db\ActiveRecord implements IdentityInterface
 {
+
+    const STATUS_DELETED = 0;
+    const STATUS_NOT_ACTIVE = 1;
+    const STATUS_ACTIVE = 10;
     /**
      * {@inheritdoc}
      */
@@ -52,19 +60,24 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
     {
         return [
             'id' => 'ID',
-            'username' => 'Username',
+            'username' => 'Имя пользователя',
             'password_hash' => 'Password Hash',
             'auth_key' => 'Auth Key',
             'email' => 'Email',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'status' => 'Статус',
+            'created_at' => 'Дата создания',
+            'updated_at' => 'Дата изменения',
             'secret_key' => 'Secret Key',
         ];
     }
-    const STATUS_DELETED = 0;
-    const STATUS_NOT_ACTIVE = 1;
-    const STATUS_ACTIVE = 10;
+
+    //Связи//
+    //----------------------------------------------------------------------------------------------------------------//
+    public function getProfiles()
+    {
+        return $this->hasMany(Profile::className(), ['user_id' => 'id']);
+    }
+    //----------------------------------------------------------------------------------------------------------------//
     //Поведение//
     //----------------------------------------------------------------------------------------------------------------//
     /*Автоматически заполняет значения текущего времени для полей created_at и updated_at*/
@@ -75,7 +88,6 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         ];
     }
     //----------------------------------------------------------------------------------------------------------------//
-
     //Поиск//
     //----------------------------------------------------------------------------------------------------------------//
     public function findByUsername($username)
@@ -95,10 +107,8 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         );
     }
     //----------------------------------------------------------------------------------------------------------------//
-
     //Хелперы//
     //----------------------------------------------------------------------------------------------------------------//
-
     /*Создание из случайной строки и текущего времени одну строку*/
     public function generateSecretKey()
     {
@@ -145,7 +155,6 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
     //----------------------------------------------------------------------------------------------------------------//
-
     //Аутентификация//
     //----------------------------------------------------------------------------------------------------------------//
     /*Находит пользователя по id и по Статусу активированного пользователя*/
