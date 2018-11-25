@@ -47,7 +47,7 @@ AppAsset::register($this);
                     data-placement="bottom"
                     data-title="<?= Yii::$app->user->identity['username'] ?>"
                     data-content="
-                            <a href='<?= Url::to(['/profile/profile']) ?>' data-method='post'>Мой профиль</a><br>
+                            <a href='<?= Url::to(['/site/profile']) ?>' data-method='post'>Мой профиль</a><br>
                             <a href='<?= Url::to(['/site/logout']) ?>' data-method='post'>Выход</a>
                         ">
                 <span class="glyphicon glyphicon-user"></span>
