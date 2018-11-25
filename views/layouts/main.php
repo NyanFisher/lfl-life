@@ -5,7 +5,6 @@
 
 use app\widgets\Alert;
 use yii\helpers\Html;
-use yii\helpers\Url;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
@@ -36,40 +35,22 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
-    /*Всплывающее окно*/
-    if (!Yii::$app->user->isGuest):
-        ?>
-        <div class="navbar-form navbar-right">
-            <button class="btn btn-sm btn-default"
-                    data-container="body"
-                    data-toggle="popover"
-                    data-trigger="focus"
-                    data-placement="bottom"
-                    data-title="<?= Yii::$app->user->identity['username'] ?>"
-                    data-content="
-                            <a href='<?= Url::to(['/site/profile']) ?>' data-method='post'>Мой профиль</a><br>
-                            <a href='<?= Url::to(['/site/logout']) ?>' data-method='post'>Выход</a>
-                        ">
-                <span class="glyphicon glyphicon-user"></span>
-            </button>
-        </div>
-    <?php
-    endif;
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
             !Yii::$app->user->isGuest ? (
             ['label' => 'На главную', 'url' => ['/site/index']]
             ) : '',
+            ['label' => 'О проекте', 'url' => ['/site/about']],
             Yii::$app->user->isGuest ? (
                 ['label' => 'Вход', 'url' => ['/site/login']]
             ) : (
                 '<li>'
                 . Html::beginForm(['/site/logout'], 'post')
-/*                . Html::submitButton(
+                . Html::submitButton(
                     'Выйти (' . Yii::$app->user->identity->username . ')',
                     ['class' => 'btn btn-link logout']
-                )*/
+                )
                 . Html::endForm()
                 . '</li>'
             )
