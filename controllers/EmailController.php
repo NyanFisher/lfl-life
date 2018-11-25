@@ -10,19 +10,15 @@ namespace app\controllers;
 
 
 use app\models\AccountActivation;
-use app\models\LoginForm;
 use app\models\ResetPasswordForm;
 use app\models\SendEmailForm;
-use app\models\SignupForm;
-use app\models\User;
 use Yii;
 use yii\base\InvalidParamException;
 use yii\helpers\Html;
 use yii\web\BadRequestHttpException;
-use yii\web\Controller;
 
 
-class EmailController extends Controller
+class EmailController extends BehaviorsController
 {
     /*Активация аккаунта через почту*/
     public function actionActivateAccount($key)
@@ -39,7 +35,7 @@ class EmailController extends Controller
             Yii::$app->session->setFlash('error', 'Ошибка активации');
             Yii::error('Ошибка при активации');
         }
-        return $this->redirect(['login']);
+        return $this->redirect(['/site/login']);
     }
 
     /*Отправка письма на почту "сброс пароля"*/
@@ -58,7 +54,7 @@ class EmailController extends Controller
             }
         }
 
-        return $this->render('sendEmail', [
+        return $this->render('/email/sendEmail', [
             'model' => $model,
         ]);
     }
@@ -74,10 +70,10 @@ class EmailController extends Controller
         if ($model->load(Yii::$app->request->post())) {
             if ($model->validate() && $model->resetPassword()) {
                 Yii::$app->getSession()->setFlash('warning', 'Пароль изменен.');
-                return $this->redirect(['login']);
+                return $this->redirect(['/site/login']);
             }
         }
-        return $this->render('resetPassword', [
+        return $this->render('/email/resetPassword', [
             'model' => $model,
         ]);
     }
