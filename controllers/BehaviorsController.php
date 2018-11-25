@@ -20,20 +20,50 @@ class BehaviorsController extends Controller
             'access' => [
                 'class' => AccessControl::className(),
                 'rules' => [
+                    //---------------------------------------/Site\---------------------------------------------------//
                     [
                         'allow' => true,
                         'controllers' => ['site'],
-                        'actions' => ['login', 'signup', 'send-email', 'reset-password', 'activate-account'],
+                        'actions' => ['login', 'signup'],
                         'verbs' => ['GET', 'POST'],
                         'roles' => ['?'],
                     ],
                     [
                         'allow' => true,
                         'controllers' => ['site'],
-                        'actions' => ['logout', 'reset-password', 'about', 'profile'],
+                        'actions' => ['logout', 'about'],
                         'verbs' => ['GET', 'POST'],
                         'roles' => ['@'],
                     ],
+                    //---------------------------------------\Site/---------------------------------------------------//
+
+                    //---------------------------------------/Email\--------------------------------------------------//
+                    [
+                        'allow' => true,
+                        'controllers' => ['email'],
+                        'actions' => ['send-email', 'reset-password', 'activate-account'],
+                        'verbs' => ['GET', 'POST'],
+                        'roles' => ['?'],
+                    ],
+                    [
+                        'allow' => true,
+                        'controllers' => ['email'],
+                        'actions' => ['reset-password'],
+                        'verbs' => ['GET', 'POST'],
+                        'roles' => ['@'],
+                    ],
+                    //---------------------------------------\Email/--------------------------------------------------//
+
+                    //---------------------------------------/Profile\------------------------------------------------//
+                    [
+                        'allow' => true,
+                        'controllers' => ['profile'],
+                        'actions' => ['profile'],
+                        'verbs' => ['GET', 'POST'],
+                        'roles' => ['@'],
+                    ],
+                    //---------------------------------------\Profile/------------------------------------------------//
+
                     [
                         'allow' => true,
                         'actions' => ['index']
