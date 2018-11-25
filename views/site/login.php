@@ -36,7 +36,7 @@ $this->title = 'Авторизация';
                         </div>
                     </div>
                     <div class="col-md-6 text-right">
-                        <?= Html::a('Забыли пароль?', ['/site/send-email']) ?>
+                        <?= Html::a('Забыли пароль?', ['/email/send-email']) ?>
                     </div>
                 </div>
 
