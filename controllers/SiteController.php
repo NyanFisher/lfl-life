@@ -2,8 +2,6 @@
 
 namespace app\controllers;
 
-
-use app\models\AccountActivation;
 use http\Url;
 use Yii;
 use yii\base\InvalidParamException;
@@ -16,9 +14,11 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\SignupForm;
+use app\models\AccountActivation;
 use app\models\ResetPasswordForm;
 use app\models\SendEmailForm;
 use app\models\User;
+use app\models\profile\Profile;
 
 class SiteController extends BehaviorsController
 {
@@ -48,8 +48,9 @@ class SiteController extends BehaviorsController
         return $this->render('index');
     }
 
-    /* Регистрация*/
-
+    //Регистрация и авторизация//
+    //----------------------------------------------------------------------------------------------------------------//
+    /*Регистрация*/
     public function actionSignup()
     {
         $emailActivation = Yii::$app->params['emailActivation'];
@@ -83,6 +84,7 @@ class SiteController extends BehaviorsController
         return $this->render('signup', ['model' => $model]);
     }
 
+    /*Авторизация*/
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
@@ -100,29 +102,85 @@ class SiteController extends BehaviorsController
         ]);
     }
 
-
+    /*Активация аккаунта через почту*/
     public function actionActivateAccount($key)
     {
-        try{
-            $user=new AccountActivation($key);
-        }
-        catch(InvalidParamException $e)
-        {
+        try {
+            $user = new AccountActivation($key);
+        } catch (InvalidParamException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
 
-        if ($user->activateAccount())
-        {
-            Yii::$app->session->setFlash('success','Активация прошла успешно! <strong>'.Html::encode($user->username).'<strong> Вы теперь официальный пользователь LFL-Life');
-        }
-        else
-        {
-            Yii::$app->session->setFlash('error','Ошибка активации');
+        if ($user->activateAccount()) {
+            Yii::$app->session->setFlash('success', 'Активация прошла успешно! <strong>' . Html::encode($user->username) . '<strong> Вы теперь официальный пользователь LFL-Life');
+        } else {
+            Yii::$app->session->setFlash('error', 'Ошибка активации');
             Yii::error('Ошибка при активации');
         }
         return $this->redirect(['login']);
     }
 
+    /*Отправка письма на почту "сброс пароля"*/
+    public function actionSendEmail()
+    {
+        $model = new SendEmailForm();
+
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate()) {
+                if ($model->sendEmail()) {
+                    Yii::$app->getSession()->setFlash('warning', 'Проверьте email');
+                    return $this->goHome();
+                } else
+                    Yii::$app->getSession()->setFlash('error', 'Нельзя сбросить пароль');
+
+            }
+        }
+
+        return $this->render('sendEmail', [
+            'model' => $model,
+        ]);
+    }
+
+    /*Сборс пароля*/
+    public function actionResetPassword($key)
+    {
+        try {
+            $model = new ResetPasswordForm($key);
+        } catch (InvalidParamException $e) {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate() && $model->resetPassword()) {
+                Yii::$app->getSession()->setFlash('warning', 'Пароль изменен.');
+                return $this->redirect(['login']);
+            }
+        }
+        return $this->render('resetPassword', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionProfile()
+    {
+        $model = ($model = Profile::findOne(Yii::$app->user->id)) ? $model : new Profile();
+        if ($model->load(Yii::$app->request->post())&& $model->validate())
+        {
+            if ($model->updateProfile())
+            {
+                Yii::$app->session->setFlash('success','Профиль изменен');
+            }
+            else{
+                Yii::$app->session->setFlash('error','Профиль не изменен');
+                Yii::error('Ошибка записи. Профиль не изменен');
+                return $this->refresh();
+            }
+        }
+        return $this->render(
+            'profile',[
+            'model'=>$model
+        ]);
+    }
+    //----------------------------------------------------------------------------------------------------------------//
 
     /**
      * Logout action.
@@ -164,41 +222,5 @@ class SiteController extends BehaviorsController
         return $this->render('about');
     }
 
-    public function actionSendEmail()
-    {
-        $model = new SendEmailForm();
 
-        if ($model->load(Yii::$app->request->post())) {
-            if ($model->validate()) {
-                if ($model->sendEmail()) {
-                    Yii::$app->getSession()->setFlash('warning', 'Проверьте email');
-                    return $this->goHome();
-                } else
-                    Yii::$app->getSession()->setFlash('error', 'Нельзя сбросить пароль');
-
-            }
-        }
-
-        return $this->render('sendEmail', [
-            'model' => $model,
-        ]);
-    }
-
-    public function actionResetPassword($key)
-    {
-        try {
-            $model = new ResetPasswordForm($key);
-        } catch (InvalidParamException $e) {
-            throw new BadRequestHttpException($e->getMessage());
-        }
-        if ($model->load(Yii::$app->request->post())) {
-            if ($model->validate() && $model->resetPassword()) {
-                Yii::$app->getSession()->setFlash('warning', 'Пароль изменен.');
-                return $this->redirect(['login']);
-            }
-        }
-        return $this->render('resetPassword', [
-            'model' => $model,
-        ]);
-    }
 }
